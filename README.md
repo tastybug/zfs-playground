@@ -23,6 +23,15 @@ zpool status
 sudo zpool destroy tank
 ```
 
+2x RAIDZ2 vdevs, 5 drives each (default 10-disk config, vdb-vdk):
+```sh
+sudo zpool create tank \
+  raidz2 /dev/vdb /dev/vdc /dev/vdd /dev/vde /dev/vdf \
+  raidz2 /dev/vdg /dev/vdh /dev/vdi /dev/vdj /dev/vdk
+zpool status tank
+sudo zpool destroy tank
+```
+
 ### Teardown
 ```sh
 make down                      # delete one VM + its disks
