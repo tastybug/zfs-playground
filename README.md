@@ -57,6 +57,7 @@ Edit a config's `disks:` list (name + size) and `make recreate` to change the la
 - **Resilver**: rebuild process after drive replacement; not downtime, but degraded redundancy + performance hit during it.
 - **12-wide RAIDZ2 resilver estimate**: ~2-5+ days depending on fill level, drive type, workload.
 - **"tank"**: traditional example ZFS pool name, no special meaning.
+- **unstable device names**: device names aren't guaranteed stable, use `zpool create tank raidz2 /dev/disk/by-id/ata-XXXX`
 
 ### Resources
 
