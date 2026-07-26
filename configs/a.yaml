@@ -1,0 +1,22 @@
+# ZFS playground VM definition. `make up CONFIG=configs/a.yaml`
+# vm.name MUST be unique across configs (it scopes the Lima instance,
+# the disk namespace, and the generated Lima config file).
+vm:
+  name: zfs-a
+  cpus: 4
+  memory: "4GiB"
+  rootDisk: "20GiB"
+
+# Each entry becomes a raw, unformatted block device in the guest,
+# appearing as /dev/vdb, /dev/vdc, ... in the order listed below.
+disks:
+  - { name: d01, size: "2GiB" }
+  - { name: d02, size: "2GiB" }
+  - { name: d03, size: "2GiB" }
+  - { name: d04, size: "2GiB" }
+  - { name: d05, size: "2GiB" }
+  - { name: d06, size: "2GiB" }
+  - { name: d07, size: "2GiB" }
+  - { name: d08, size: "2GiB" }
+  - { name: d09, size: "2GiB" }
+  - { name: d10, size: "2GiB" }

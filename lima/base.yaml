@@ -1,0 +1,82 @@
+# Static Lima config shared by all playground VMs.
+# render.sh appends the per-VM `cpus`, `memory`, `disk`, and `additionalDisks`
+# to a copy of this file to produce lima/.generated-<vm>.yaml.
+base:
+- template:debian-12
+
+# Auto-assign a free host port for SSH so parallel VMs never collide.
+ssh:
+  localPort: 0
+
+# Install OpenZFS. On Debian 12 this needs `contrib` and builds the module
+# via DKMS, so first boot takes an extra ~1-3 min.
+provision:
+- mode: system
+  script: |
+    #!/bin/bash
+    # No `set -e`: dpkg may return non-zero while building the DKMS module for a
+    # non-running kernel even though the running-kernel build succeeds. The final
+    # `lsmod` gate is the real success condition, so a transient apt/modprobe
+    # hiccup must not abort the whole script.
+    set -uxo pipefail
+    export DEBIAN_FRONTEND=noninteractive
+    # Idempotent: this provision runs on every boot; bail once ZFS is loaded.
+    # Read /proc/modules directly (not `lsmod | grep -q`): under pipefail a
+    # `grep -q` closes the pipe early, `lsmod` gets SIGPIPE, and the pipeline
+    # reports failure even when the module is present.
+    if grep -q '^zfs ' /proc/modules; then
+      exit 0
+    fi
+    # Enable contrib (covers both classic .list and deb822 .sources layouts).
+    sed -i 's/ main$/ main contrib/' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
+    if [ -d /etc/apt/sources.list.d ]; then
+      for f in /etc/apt/sources.list.d/*.sources; do
+        [ -e "$f" ] || continue
+        grep -q 'contrib' "$f" || sed -i 's/^\(Components:.*\)$/\1 contrib/' "$f"
+      done
+    fi
+    apt-get update
+    # Headers for the running kernel (so we can build+load ZFS now) AND the
+    # cloud-kernel meta. Installing zfs-dkms pulls in a newer cloud kernel image;
+    # a later `limactl stop/start` boots into it, so its headers must be present
+    # too or the module won't exist for the booted kernel after a restart.
+    arch="$(dpkg --print-architecture)"
+    apt-get install -y "linux-headers-$(uname -r)" || true
+    apt-get install -y "linux-headers-cloud-${arch}" || true
+    apt-get install -y zfs-dkms zfsutils-linux
+    # Build ZFS for EVERY kernel that has headers (the running one and the newer
+    # one a restart will boot), not just whichever apt happened to trigger.
+    dkms autoinstall || true
+    # Load zfs early on every subsequent boot (before this provision runs) so
+    # pools auto-import via zfs-import-cache.service instead of needing a manual
+    # `zpool import` after a restart.
+    echo zfs > /etc/modules-load.d/zfs.conf
+    # Index freshly-built modules, then load (retry: the .ko may land moments
+    # after apt returns, so modprobe can briefly race depmod).
+    depmod -a || true
+    # Load the module. Right after the very first DKMS build, `modprobe` can
+    # return 0 a beat before the module shows up in /proc/modules, so retry the
+    # *check* (not just modprobe) with a short sleep and exit explicitly.
+    for _ in $(seq 1 15); do
+      modprobe zfs 2>/dev/null || true
+      if grep -q '^zfs ' /proc/modules; then
+        exit 0
+      fi
+      sleep 2
+    done
+    echo "zfs module failed to load" >&2
+    exit 1
+
+# Block `limactl start` until ZFS is actually usable.
+probes:
+- description: "zpool to be available"
+  script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    if ! timeout 300s bash -c "until command -v zpool >/dev/null 2>&1 && lsmod | grep -q '^zfs'; do sleep 3; done"; then
+      echo >&2 "zfs is not ready yet"
+      exit 1
+    fi
+  hint: |
+    ZFS (zfsutils-linux + zfs-dkms) is not installed/loaded yet.
+    Run `limactl shell <vm>` and check `sudo journalctl` for the provision script.
