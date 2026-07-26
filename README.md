@@ -57,10 +57,8 @@ Edit a config's `disks:` list (name + size) and `make recreate` to change the la
 - **Resilver**: rebuild process after drive replacement; not downtime, but degraded redundancy + performance hit during it.
 - **12-wide RAIDZ2 resilver estimate**: ~2-5+ days depending on fill level, drive type, workload.
 - **"tank"**: traditional example ZFS pool name, no special meaning.
-- **unstable device names**: device names aren't guaranteed stable, use `zpool create tank raidz2 /dev/disk/by-id/ata-XXXX`
-- **by-id in this VM**: Lima's virtio disks have no serial, so there's no `/dev/disk/by-id/ata-*`.
-  Use `/dev/disk/by-path/virtio-pci-*` instead (stable — Lima keeps `additionalDisks` order to PCI slot):
-  `ls -la /dev/disk/by-path/ | grep virtio-pci` then `zpool create tank raidz2 /dev/disk/by-path/virtio-pci-0000:00:0{7,8,9}.0 ...`
+- **Device Names Are Unstable**: device names aren't guaranteed stable, use `zpool create tank raidz2 /dev/disk/by-id/ata-XXXX`
+  - LIMITS OF THIS VIRTUAL SETUP: Lima's virtio disks have no serial, so there's no `/dev/disk/by-id/ata-*`. We ignore this issue here.
 
 ### Resources
 
