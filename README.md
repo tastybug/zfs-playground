@@ -39,3 +39,16 @@ Edit a config's `disks:` list (name + size) and `make recreate` to change the la
   `make up` still succeeds and ZFS works. (Raw is required so `zpool` gets whole disks;
   it's also what keeps a pool safe across VM restarts.)
 - Pools auto-import after `limactl stop`/`start`. If one ever doesn't, `sudo zpool import tank`.
+
+### Collected Wisdom
+
+- **Growing pools**: add vdevs (striped with existing); can't easily widen a raidz vdev itself.
+- **RAIDZ1 vs RAIDZ2 (4x20TB)**: RAIDZ1 ~60TB usable, RAIDZ2 ~40TB usable.
+- **12-drive vdev options**: 2x RAIDZ2 6-wide (balanced, ~80TB), 1x RAIDZ2 12-wide (max capacity ~200TB, worst IOPS/resilver), 3x RAIDZ1 (capacity+IOPS, weaker resilience), 6x mirrors (best IOPS/resilver, least capacity), 2x RAIDZ1 (more capacity, riskier).
+- **Resilver**: rebuild process after drive replacement; not downtime, but degraded redundancy + performance hit during it.
+- **12-wide RAIDZ2 resilver estimate**: ~2-5+ days depending on fill level, drive type, workload.
+- **"tank"**: traditional example ZFS pool name, no special meaning.
+
+### Resources
+
+- <https://klarasystems.com/articles/openzfs-understanding-zfs-vdev-types/>
