@@ -35,7 +35,7 @@ shasum -a 256 file.bin
 
 Rsync it into A's dataset:
 ```sh
-rsync -avz --progress -e "ssh -F ~/.lima/zfs-a/ssh.config" file.bin lima-zfs-a:/tank/data/
+rsync -avz --progress -e "ssh -F ${HOME}/.lima/zfs-a/ssh.config" file.bin lima-zfs-a:/tank/data/
 ```
 
 Migrate A → B. VMs can't reach each other directly (no shared Lima network), so relay
