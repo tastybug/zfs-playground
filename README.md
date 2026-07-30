@@ -1,9 +1,11 @@
 # zfs-playground
 
 Disposable Lima VMs (Debian 12) with a batch of raw virtual disks for exercising ZFS.
-Disks are declared in `configs/*.yaml`. Up to 3 VMs (`zfs-a`/`zfs-b`/`zfs-c`) run in parallel.
+Disks are declared in `configs/*.yaml`. Up to 3 VMs (`zfs-a`/`zfs-b`/`zfs-c`) run in parallel. Edit a config's `disks:` list (name + size) and `make recreate` to change the layout.
 
 Requires: `limactl`, `qemu`, `yq`, `make`.
+
+## Playground Rules
 
 ### Bootstrap
 ```sh
@@ -13,7 +15,7 @@ make up-all                    # start every config
 ```
 First boot compiles the ZFS module via DKMS (a few minutes); later boots are fast.
 
-### Experiment
+### Basic Stuff
 ```sh
 make ssh                       # or: make ssh CONFIG=configs/b.yaml
 # inside the VM — disks are /dev/vdb, /dev/vdc, ... in config order:
@@ -40,7 +42,12 @@ make recreate                  # down + up (fresh disks) for one VM
 make list                      # all VMs and disks
 ```
 
-Edit a config's `disks:` list (name + size) and `make recreate` to change the layout.
+### Complex Experiments
+
+- [rsyncing-into-a-pool.md](./experiments-docs/rsyncing-into-a-pool.md) — raidz2 + rsync from the host
+- [migrating-dataset-between-pools.md](./experiments-docs/migrating-dataset-between-pools.md) — quota'd dataset, rsync in, zfs send/recv migration, checksum-verified
+
+
 
 ### Notes
 - Disks are attached raw (`format: false`), so Lima's boot script logs a harmless
