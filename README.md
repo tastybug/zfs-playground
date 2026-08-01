@@ -58,10 +58,12 @@ make list                      # all VMs and disks
 
 ### Collected Wisdom
 
-- **Growing pools**: add vdevs (striped with existing); can't easily widen a raidz vdev itself.
+- **Growing pools**: by adding vdevs - expanding vdevs is not the way.
+- **No mix of vdevs in a pool**: a pool should consist of multiples of the same vdev configuration (e.g. 2x raidz1 of 3 disks). Mixing a 3-disk raidz with a 4-disk raidz in the same pool is discouraged.
+- **Few pools, many datasets**: it is more efficient I/O and disk space wise to have few or just one pool on a host.
 - **RAIDZ1 vs RAIDZ2 (4x20TB)**: RAIDZ1 ~60TB usable, RAIDZ2 ~40TB usable.
 - **12-drive vdev options**: 2x RAIDZ2 6-wide (balanced, ~80TB), 1x RAIDZ2 12-wide (max capacity ~200TB, worst IOPS/resilver), 3x RAIDZ1 (capacity+IOPS, weaker resilience), 6x mirrors (best IOPS/resilver, least capacity), 2x RAIDZ1 (more capacity, riskier).
-- **Resilver**: rebuild process after drive replacement; not downtime, but degraded redundancy + performance hit during it.
+- **What's resilver**: rebuild process after drive replacement; not downtime, but degraded redundancy + performance hit during it.
 - **12-wide RAIDZ2 resilver estimate**: ~2-5+ days depending on fill level, drive type, workload.
 - **"tank"**: traditional example ZFS pool name, no special meaning.
 - **Device Names Are Unstable**: device names aren't guaranteed stable, use `zpool create tank raidz2 /dev/disk/by-id/ata-XXXX`
