@@ -13,7 +13,7 @@ VM="$(yq -r '.vm.name' "$CONFIG")"
 limactl delete -f "$VM" 2>/dev/null || true
 
 # Delete every disk owned by this VM ("<vm>-..."), leaving other VMs alone.
-limactl disk ls 2>/dev/null | awk 'NR>1 {print $1}' | grep "^$VM-" | while read -r disk; do
+limactl disk ls 2>/dev/null | awk 'NR>1 {print $1}' | { grep "^$VM-" || true; } | while read -r disk; do
   echo "deleting disk: $disk"
   limactl disk delete "$disk" >/dev/null || true
 done
