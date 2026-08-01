@@ -47,6 +47,8 @@ make list                      # all VMs and disks
 - [rsyncing-into-a-pool.md](./experiments-docs/rsyncing-into-a-pool.md) — raidz2 + rsync from the host
 - [migrating-dataset-between-pools.md](./experiments-docs/migrating-dataset-between-pools.md) — quota'd dataset, rsync in, zfs send/recv migration, checksum-verified
 - [replacing-a-failed-disk.md](./experiments-docs/replacing-a-failed-disk.md) — raidz2, kill a disk mid-flight, replace + resilver
+- [scrubbing-and-corruption.md](./experiments-docs/scrubbing-and-corruption.md) — raidz2, corrupt raw sectors on one disk, scrub detects + repairs from parity
+- [snapshot-pruning.md](./experiments-docs/snapshot-pruning.md) — raidz2, stale snapshot pins deleted data, pruning reclaims the space
 
 
 
