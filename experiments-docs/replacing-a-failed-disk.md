@@ -53,7 +53,6 @@ ssh -F ~/.lima/zfs-a/ssh.config lima-zfs-a <<'EOF'
 sudo zpool replace tank 15257435499842936386 /dev/vdk
 zpool status tank   # state: ONLINE, scan: resilvered ...
 shasum -a 256 /tank/file.bin   # still matches
-sudo zpool destroy tank
 EOF
 ```
 
